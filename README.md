@@ -8,6 +8,17 @@ This plugin is a fork of and derivative work based on [**LDR | Movie Visualizer*
 
 ---
 
+## Screenshots
+
+### Dashboard
+![Dashboard hero and stats bar](docs/dashboard-hero.jpg)
+![Dashboard carousels — Recently Watched and Favorites](docs/dashboard-carousels.jpg)
+
+### Catalog
+![Catalog — filterable grid of movies and TV shows](docs/catalog.jpg)
+
+---
+
 ## Features
 
 Everything works across **both** movies and TV shows, in one catalog and one dashboard, filterable by media type.
