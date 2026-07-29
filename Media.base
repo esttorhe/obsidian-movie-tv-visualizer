@@ -1,0 +1,236 @@
+filters:
+  and:
+    - or:
+        - categories.contains(link("Movies"))
+        - categories.contains(link("TV Shows"))
+    - '!file.name.contains("Template")'
+properties:
+  file.name:
+    displayName: Title
+  note.year:
+    displayName: Year
+  note.director:
+    displayName: Director
+  note.creator:
+    displayName: Creator
+  note.network:
+    displayName: Network
+  note.status:
+    displayName: Status
+  note.seasons:
+    displayName: Seasons
+  note.episodes:
+    displayName: Episodes
+  note.currentSeason:
+    displayName: On Season
+  note.currentEpisode:
+    displayName: On Episode
+  note.cast:
+    displayName: Cast
+  note.genre:
+    displayName: Genre
+  note.rating:
+    displayName: My Rating
+  note.scoreImdb:
+    displayName: IMDb
+  note.scoreRT:
+    displayName: RT
+  note.scoreMetacritic:
+    displayName: MC
+  note.runtime:
+    displayName: Runtime
+  note.episodeRuntime:
+    displayName: Ep. Runtime
+  note.last:
+    displayName: Last Watched
+  note.watchlist:
+    displayName: Added
+  note.favorite:
+    displayName: Fav
+  note.timesWatched:
+    displayName: Times
+  note.review:
+    displayName: Review
+views:
+  - type: table
+    name: All
+    order:
+      - file.name
+      - year
+      - director
+      - creator
+      - rating
+      - scoreImdb
+      - scoreRT
+      - genre
+      - last
+    sort:
+      - property: last
+        direction: DESC
+      - property: file.name
+        direction: ASC
+  - type: table
+    name: Movies
+    filters:
+      and:
+        - categories.contains(link("Movies"))
+    order:
+      - file.name
+      - year
+      - director
+      - rating
+      - scoreImdb
+      - scoreRT
+      - runtime
+      - genre
+      - last
+    sort:
+      - property: rating
+        direction: DESC
+      - property: scoreImdb
+        direction: DESC
+  - type: table
+    name: TV Shows
+    filters:
+      and:
+        - categories.contains(link("TV Shows"))
+    order:
+      - file.name
+      - year
+      - creator
+      - network
+      - status
+      - seasons
+      - rating
+      - scoreImdb
+      - genre
+      - last
+    sort:
+      - property: rating
+        direction: DESC
+      - property: scoreImdb
+        direction: DESC
+  - type: table
+    name: Currently Watching
+    filters:
+      and:
+        - categories.contains(link("TV Shows"))
+        - "!currentEpisode.isEmpty()"
+    order:
+      - file.name
+      - currentSeason
+      - currentEpisode
+      - seasons
+      - episodes
+      - network
+      - last
+    sort:
+      - property: last
+        direction: DESC
+  - type: table
+    name: To-watch
+    filters:
+      and:
+        - last.isEmpty()
+        - rating.isEmpty()
+    order:
+      - file.name
+      - year
+      - scoreImdb
+      - scoreRT
+      - runtime
+      - watchlist
+      - director
+      - creator
+      - genre
+    sort:
+      - property: scoreImdb
+        direction: DESC
+      - property: scoreRT
+        direction: DESC
+      - property: watchlist
+        direction: DESC
+  - type: table
+    name: Favorites
+    filters:
+      and:
+        - note.rating > 7
+    order:
+      - file.name
+      - director
+      - creator
+      - year
+      - genre
+      - rating
+      - scoreImdb
+      - last
+    sort:
+      - property: rating
+        direction: DESC
+      - property: scoreImdb
+        direction: DESC
+  - type: table
+    name: Last Watched
+    filters:
+      and:
+        - "!last.isEmpty()"
+    order:
+      - file.name
+      - year
+      - rating
+      - last
+      - director
+      - creator
+      - genre
+    sort:
+      - property: last
+        direction: DESC
+    limit: 20
+  - type: table
+    name: By Creator
+    filters:
+      or:
+        - list(director).contains(this)
+        - list(creator).contains(this)
+    order:
+      - file.name
+      - year
+      - rating
+      - scoreImdb
+      - last
+      - genre
+    sort:
+      - property: year
+        direction: DESC
+  - type: table
+    name: By Genre
+    filters:
+      and:
+        - list(genre).contains(this)
+    order:
+      - file.name
+      - rating
+      - year
+      - director
+      - creator
+      - last
+    sort:
+      - property: rating
+        direction: DESC
+      - property: scoreImdb
+        direction: DESC
+  - type: table
+    name: By Actor
+    filters:
+      and:
+        - list(cast).contains(this)
+    order:
+      - file.name
+      - year
+      - director
+      - creator
+      - rating
+      - scoreImdb
+    sort:
+      - property: year
+        direction: DESC
