@@ -1,6 +1,7 @@
-/* ============================================================
-   LDR Movie Visualizer — styles.css
-   Uses Obsidian CSS custom properties for full theme support
+/* ABOUTME: Stylesheet for the Movie & TV Visualizer plugin views, cards and controls.
+   ABOUTME: Uses Obsidian CSS custom properties for full light/dark theme support.
+   Forked from LDR | Movie Visualizer (github.com/ldr-devx/ldr-obsidian-movie-visualizer)
+   and extended with TV-specific styles; internal class prefix remains `lmv-`.
    ============================================================ */
 
 /* ── Custom properties ────────────────────────────────────── */
@@ -2641,4 +2642,117 @@
     gap: 6px;
     padding-top: 2px;
     border-top: 1px solid var(--background-modifier-border);
+}
+
+/* ============================================================
+   Movie & TV Visualizer — TV / media-type additions
+   ============================================================ */
+
+/* Media-type badge on cards */
+.lmv-card__badge--type {
+    left: 6px;
+    right: auto;
+    top: 6px;
+    background: rgba(15, 15, 30, 0.82);
+    color: #fff;
+}
+.lmv-card__badge--type.lmv-card__badge--tv {
+    color: var(--lmv-lavender);
+}
+
+/* TV progress pill on cards */
+.lmv-card__progress {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    z-index: 2;
+}
+
+/* Hero + detail media-type kicker */
+.lmv-hero__kicker,
+.lmv-detail__kicker {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--lmv-lavender);
+    margin-bottom: 4px;
+}
+
+/* Search / reviews / stats media-type filter row spacing */
+.lmv-search__filters {
+    margin: 0 auto 12px;
+    justify-content: center;
+}
+
+/* TV progress panel in the detail body */
+.lmv-detail__progress .lmv-detail__section-title {
+    margin-bottom: 8px;
+}
+.lmv-detail__progress-state {
+    color: var(--text-muted);
+    margin: 0 0 10px;
+    font-size: 0.9rem;
+}
+.lmv-detail__progress-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--background-modifier-border);
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+.lmv-detail__progress-fill {
+    height: 100%;
+    background: var(--interactive-accent);
+    border-radius: 999px;
+    transition: width 300ms ease;
+    width: 0%;
+}
+.lmv-detail__progress-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.lmv-detail__progress-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.lmv-input--num {
+    width: 80px;
+}
+
+/* Tier list item media-type badge */
+.lmv-tierlist__item-type {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 15, 30, 0.78);
+    border-radius: 4px;
+    color: #fff;
+}
+.lmv-tierlist__item-type svg {
+    width: 11px;
+    height: 11px;
+}
+.lmv-tierlist__item-type--tv {
+    color: var(--lmv-lavender);
+}
+.lmv-tierlist__item {
+    position: relative;
 }
