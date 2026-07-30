@@ -308,6 +308,7 @@ export class MediaVisualizerView extends ItemView {
 							onBack: () => nav("catalog"),
 							onItemClick: handlers.onItemClick,
 							onFavToggle: handlers.onFavToggle,
+							onEditNote: (i) => this.app.workspace.getLeaf("tab").openFile(i.file),
 						});
 					}
 				}
@@ -337,6 +338,7 @@ export class MediaVisualizerView extends ItemView {
 				onFavToggle: async (m) => {
 					await this.service.updateField(m, { favorite: !m.favorite });
 				},
+				onEditNote: (i) => this.app.workspace.getLeaf("tab").openFile(i.file),
 			});
 			// Reached directly here (bypassing renderRoute's reset) when opened
 			// from partway down a scrolled catalog — must still open at the top.

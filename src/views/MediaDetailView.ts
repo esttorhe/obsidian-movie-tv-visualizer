@@ -19,6 +19,7 @@ export interface MediaDetailOptions {
 	onBack: () => void;
 	onItemClick: (item: MediaItem) => void;
 	onFavToggle: (item: MediaItem) => void;
+	onEditNote?: (item: MediaItem) => void;
 }
 
 export function renderMediaDetail(container: HTMLElement, opts: MediaDetailOptions): void {
@@ -192,6 +193,16 @@ export function renderMediaDetail(container: HTMLElement, opts: MediaDetailOptio
 	playlistBtn.title = "Add to playlist";
 	playlistBtn.addEventListener("click", () => showAddToPlaylistModal(container, item));
 	actions.appendChild(playlistBtn);
+
+	if (opts.onEditNote) {
+		const editBtn = document.createElement("button");
+		editBtn.className = "lmv-btn lmv-btn--sm lmv-btn--ghost";
+		setIcon(editBtn, "pencil");
+		editBtn.append(" Edit note");
+		editBtn.title = "Open this note to edit its frontmatter directly";
+		editBtn.addEventListener("click", () => opts.onEditNote!(item));
+		actions.appendChild(editBtn);
+	}
 
 	if (item.trailer) {
 		const trailerBtn = document.createElement("a");
