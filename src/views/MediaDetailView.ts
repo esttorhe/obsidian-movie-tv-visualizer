@@ -7,6 +7,7 @@ import { StatsEngine } from "../services/StatsEngine";
 import { createStarRating } from "../components/StarRating";
 import { createCarousel } from "../components/Carousel";
 import { credits, displayRuntime, isTv, isWatched, mediaLabel, tvProgressFraction } from "../media";
+import { cleanSearchTitle } from "../parse";
 
 const stats = new StatsEngine();
 
@@ -203,9 +204,15 @@ export function renderMediaDetail(container: HTMLElement, opts: MediaDetailOptio
 		actions.appendChild(trailerBtn);
 	}
 
-	if (item.imdbId) {
+	{
+		// item.title falls back to the note's filename — which carries this vault's
+		// capture-timestamp prefix — when there's no explicit `title` frontmatter
+		// field, so it must be cleaned before it's used in a search query.
+		const imdbHref = item.imdbId
+			? `https://www.imdb.com/title/${item.imdbId}`
+			: `https://www.imdb.com/find/?q=${encodeURIComponent([cleanSearchTitle(item.title), item.year].filter(Boolean).join(" "))}`;
 		const imdbBtn = document.createElement("a");
-		imdbBtn.href = `https://www.imdb.com/title/${item.imdbId}`;
+		imdbBtn.href = imdbHref;
 		imdbBtn.className = "lmv-btn lmv-btn--sm lmv-btn--ghost";
 		imdbBtn.textContent = "IMDb";
 		imdbBtn.target = "_blank";

@@ -3,6 +3,14 @@
 import type { TFile } from "obsidian";
 import type { MediaItem, Movie, TvShow, MediaType, TvStatus } from "./types";
 
+// item.title falls back to the note's filename when there's no explicit `title`
+// frontmatter field, and that filename may carry a capture-timestamp prefix
+// (`YYYYMMDDHHmm <Title>`). That's fine for display, but it must never leak into
+// an external search query (IMDb, etc.) — strip it there specifically.
+export function cleanSearchTitle(title: string): string {
+	return title.replace(/^\d{12}\s+/, "").trim();
+}
+
 // Strip [[wikilink]] syntax from a string
 export function stripWikilink(s: string): string {
 	return s.replace(/^\[\[/, "").replace(/\]\]$/, "");

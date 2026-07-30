@@ -11,8 +11,27 @@ import {
 	parseTvStatus,
 	detectMediaType,
 	buildMediaItem,
+	cleanSearchTitle,
 } from "../src/parse";
 import { fakeFile } from "./helpers";
+
+describe("cleanSearchTitle", () => {
+	it("strips a leading YYYYMMDDHHmm capture timestamp", () => {
+		// item.title falls back to the note's filename when there's no explicit
+		// `title` frontmatter field (true for most notes in this vault), and that
+		// filename carries a 12-digit capture timestamp prefix that must never
+		// leak into an external search query.
+		expect(cleanSearchTitle("202607260017 Agent Kim Reactivated")).toBe("Agent Kim Reactivated");
+	});
+
+	it("leaves titles without a timestamp prefix untouched", () => {
+		expect(cleanSearchTitle("Agent Kim Reactivated")).toBe("Agent Kim Reactivated");
+	});
+
+	it("does not strip a number that isn't exactly 12 digits", () => {
+		expect(cleanSearchTitle("2001 A Space Odyssey")).toBe("2001 A Space Odyssey");
+	});
+});
 
 describe("coercion helpers", () => {
 	it("strips wikilink syntax", () => {
