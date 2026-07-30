@@ -63,6 +63,7 @@ const TIERLIST_PATH = `${PLUGIN_DIR}/tierlist.json`;
 export class MediaVisualizerView extends ItemView {
 	private service!: MediaDataService;
 	private currentRoute: Route = "dashboard";
+	private rootEl!: HTMLElement;
 	private navEl!: HTMLElement;
 	private viewContentEl!: HTMLElement;
 	private unsubscribe?: () => void;
@@ -97,9 +98,19 @@ export class MediaVisualizerView extends ItemView {
 		const root = this.containerEl.children[1] as HTMLElement;
 		root.empty();
 		root.addClass("lmv-root");
+		this.rootEl = root;
 
 		this.navEl = root.createDiv("lmv-nav");
 		this.buildNav();
+
+		// Mobile-only: the nav sidebar becomes an off-canvas drawer below 700px
+		// (see the responsive block in styles.css); these two elements open/close it.
+		const navToggle = root.createDiv("lmv-nav-toggle");
+		setIcon(navToggle, "menu");
+		navToggle.addEventListener("click", () => root.toggleClass("lmv-root--nav-open", !root.hasClass("lmv-root--nav-open")));
+
+		const navBackdrop = root.createDiv("lmv-nav-backdrop");
+		navBackdrop.addEventListener("click", () => root.removeClass("lmv-root--nav-open"));
 
 		this.viewContentEl = root.createDiv("lmv-content");
 
@@ -155,6 +166,7 @@ export class MediaVisualizerView extends ItemView {
 
 	private navigateTo(route: Route, data?: unknown): void {
 		this.currentRoute = route;
+		this.rootEl.removeClass("lmv-root--nav-open");
 
 		this.navEl.querySelectorAll(".lmv-nav__item").forEach((el) => {
 			const r = (el as HTMLElement).dataset.route;
@@ -301,10 +313,15 @@ export class MediaVisualizerView extends ItemView {
 				}
 				break;
 		}
+
+		// A freshly rendered route should always open at the top, not wherever
+		// the previous route happened to leave scrollTop.
+		this.viewContentEl.scrollTop = 0;
 	}
 
 	private openDetail(item: MediaItem): void {
 		this.currentRoute = "detail";
+		this.rootEl.removeClass("lmv-root--nav-open");
 		this.navEl.querySelectorAll(".lmv-nav__item").forEach((el) => {
 			el.classList.remove("lmv-nav__item--active");
 		});
@@ -321,6 +338,9 @@ export class MediaVisualizerView extends ItemView {
 					await this.service.updateField(m, { favorite: !m.favorite });
 				},
 			});
+			// Reached directly here (bypassing renderRoute's reset) when opened
+			// from partway down a scrolled catalog — must still open at the top.
+			this.viewContentEl.scrollTop = 0;
 			this.viewContentEl.classList.add("lmv-content--enter");
 			setTimeout(() => this.viewContentEl.classList.remove("lmv-content--enter"), 300);
 		}, 150);
