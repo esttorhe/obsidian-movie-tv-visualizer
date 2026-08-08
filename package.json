@@ -1,6 +1,6 @@
 {
   "name": "obsidian-movie-tv-visualizer",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Visual movie & TV show catalog plugin for Obsidian",
   "main": "main.js",
   "scripts": {

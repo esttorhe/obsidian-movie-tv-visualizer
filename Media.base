@@ -17,6 +17,8 @@ properties:
     displayName: Network
   note.status:
     displayName: Status
+  note.watchStatus:
+    displayName: Watch Status
   note.seasons:
     displayName: Seasons
   note.episodes:
@@ -116,6 +118,9 @@ views:
       and:
         - categories.contains(link("TV Shows"))
         - "!currentEpisode.isEmpty()"
+        - or:
+            - watchStatus.isEmpty()
+            - watchStatus != "dropped"
     order:
       - file.name
       - currentSeason
@@ -128,11 +133,32 @@ views:
       - property: last
         direction: DESC
   - type: table
+    name: Dropped
+    filters:
+      and:
+        - watchStatus == "dropped"
+    order:
+      - file.name
+      - year
+      - currentSeason
+      - currentEpisode
+      - episodes
+      - rating
+      - scoreImdb
+      - genre
+      - last
+    sort:
+      - property: last
+        direction: DESC
+  - type: table
     name: To-watch
     filters:
       and:
         - last.isEmpty()
         - rating.isEmpty()
+        - or:
+            - watchStatus.isEmpty()
+            - watchStatus != "dropped"
     order:
       - file.name
       - year

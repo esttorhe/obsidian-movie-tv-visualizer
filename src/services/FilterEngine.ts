@@ -1,7 +1,7 @@
 // ABOUTME: Pure filter engine that narrows a mixed movie/TV collection by the active FilterState.
 // ABOUTME: Media-type, genre, status, year, rating, runtime, credit, cast, network and text filters.
 import type { MediaItem, FilterState } from "../types";
-import { credits, displayRuntime, isWatched, isTv } from "../media";
+import { credits, displayRuntime, isWatched, isWatching, isDropped, isTv } from "../media";
 
 export class FilterEngine {
 	apply(items: MediaItem[], filter: FilterState): MediaItem[] {
@@ -33,10 +33,16 @@ export class FilterEngine {
 
 		switch (filter.status) {
 			case "unwatched":
-				result = result.filter((m) => !isWatched(m));
+				result = result.filter((m) => m.watchStatus === "unwatched");
+				break;
+			case "watching":
+				result = result.filter((m) => isWatching(m));
 				break;
 			case "watched":
 				result = result.filter((m) => isWatched(m));
+				break;
+			case "dropped":
+				result = result.filter((m) => isDropped(m));
 				break;
 			case "favorites":
 				result = result.filter((m) => m.favorite);

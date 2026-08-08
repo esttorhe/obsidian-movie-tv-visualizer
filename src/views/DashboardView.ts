@@ -57,6 +57,7 @@ export function renderDashboard(container: HTMLElement, opts: DashboardViewOptio
 		{ value: stats.movieCount, label: "Movies" },
 		{ value: stats.tvCount, label: "TV Shows" },
 		{ value: stats.watched, label: "Watched" },
+		{ value: stats.dropped, label: "Dropped" },
 		{ value: stats.favorites, label: "Favorites" },
 		{ value: stats.avgRating > 0 ? stats.avgRating.toFixed(1) : "—", label: "My rating" },
 		{ value: stats.avgImdb > 0 ? stats.avgImdb.toFixed(1) : "—", label: "IMDb" },

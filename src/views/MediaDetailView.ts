@@ -6,8 +6,8 @@ import { MediaDataService } from "../services/MediaDataService";
 import { StatsEngine } from "../services/StatsEngine";
 import { createStarRating } from "../components/StarRating";
 import { createCarousel } from "../components/Carousel";
-import { credits, displayRuntime, isTv, isWatched, mediaLabel, tvProgressFraction } from "../media";
-import { cleanSearchTitle } from "../parse";
+import { credits, displayRuntime, isTv, isWatched, isDropped, mediaLabel, tvProgressFraction } from "../media";
+import { cleanSearchTitle, parseWatchStatus } from "../parse";
 
 const stats = new StatsEngine();
 
@@ -159,33 +159,62 @@ export function renderMediaDetail(container: HTMLElement, opts: MediaDetailOptio
 	});
 	actions.appendChild(favBtn);
 
-	const watched = isWatched(item);
 	const watchedBtn = document.createElement("button");
-	watchedBtn.className = `lmv-btn lmv-btn--sm${watched ? " lmv-btn--active" : ""}`;
-	watchedBtn.textContent = watched
-		? `Watched${item.timesWatched > 1 ? ` (${item.timesWatched}x)` : ""}`
-		: "Mark as watched";
-	setIcon(watchedBtn, watched ? "check-circle" : "circle");
+	watchedBtn.className = "lmv-btn lmv-btn--sm";
+
+	// Dropped toggle — "I stopped watching this and I'm not going back to it".
+	const dropBtn = document.createElement("button");
+	dropBtn.className = "lmv-btn lmv-btn--sm";
+
+	// The two buttons describe one watch status between them, so they always repaint together.
+	const paintWatchButtons = () => {
+		const watched = isWatched(item);
+		watchedBtn.className = `lmv-btn lmv-btn--sm${watched ? " lmv-btn--active" : ""}`;
+		watchedBtn.textContent = watched
+			? `Watched${item.timesWatched > 1 ? ` (${item.timesWatched}x)` : ""}`
+			: "Mark as watched";
+		setIcon(watchedBtn, watched ? "check-circle" : "circle");
+
+		const dropped = isDropped(item);
+		dropBtn.className = `lmv-btn lmv-btn--sm${dropped ? " lmv-btn--active lmv-btn--dropped" : ""}`;
+		dropBtn.textContent = dropped ? "Dropped" : "Mark as dropped";
+		dropBtn.title = dropped
+			? "No longer dropped — restore the status your progress implies"
+			: "Stopped watching without finishing";
+		setIcon(dropBtn, "x-circle");
+	};
+	paintWatchButtons();
+
 	watchedBtn.addEventListener("click", async () => {
 		if (isWatched(item)) {
-			await service.updateField(item, { last: "", timesWatched: 0 });
+			await service.updateField(item, { last: "", timesWatched: 0, watchStatus: "unwatched" });
 			item.last = "";
 			item.timesWatched = 0;
-			watchedBtn.textContent = "Mark as watched";
-			watchedBtn.classList.remove("lmv-btn--active");
-			setIcon(watchedBtn, "circle");
+			item.watchStatus = "unwatched";
 		} else {
+			// Also the way out of "dropped": deciding you did finish it after all.
 			const today = new Date().toISOString().split("T")[0];
 			const newCount = item.timesWatched + 1;
-			await service.updateField(item, { last: today, timesWatched: newCount });
+			await service.updateField(item, { last: today, timesWatched: newCount, watchStatus: "watched" });
 			item.last = today;
 			item.timesWatched = newCount;
-			watchedBtn.textContent = `Watched${newCount > 1 ? ` (${newCount}x)` : ""}`;
-			watchedBtn.classList.add("lmv-btn--active");
-			setIcon(watchedBtn, "check-circle");
+			item.watchStatus = "watched";
 		}
+		paintWatchButtons();
 	});
 	actions.appendChild(watchedBtn);
+
+	dropBtn.addEventListener("click", async () => {
+		// Un-dropping hands the note back to inference rather than guessing a status:
+		// whatever `last`/`timesWatched`/season progress already says is the truth.
+		const next = isDropped(item)
+			? parseWatchStatus(undefined, item as unknown as Record<string, unknown>)
+			: "dropped";
+		await service.updateField(item, { watchStatus: next });
+		item.watchStatus = next;
+		paintWatchButtons();
+	});
+	actions.appendChild(dropBtn);
 
 	const playlistBtn = document.createElement("button");
 	playlistBtn.className = "lmv-btn lmv-btn--sm";

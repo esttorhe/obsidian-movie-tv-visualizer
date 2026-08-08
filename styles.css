@@ -9,6 +9,10 @@
     --lmv-lavender: #a78bfa;
     --lmv-lavender-dim: rgba(167, 139, 250, 0.15);
     --lmv-lavender-border: rgba(167, 139, 250, 0.3);
+    --lmv-dropped: #f87171;
+    --lmv-dropped-solid: rgba(248, 113, 113, 0.92);
+    --lmv-dropped-dim: rgba(248, 113, 113, 0.14);
+    --lmv-dropped-border: rgba(248, 113, 113, 0.5);
     --lmv-card-radius: var(--radius-m, 8px);
     --lmv-transition: 200ms ease;
 }
@@ -616,13 +620,18 @@
     color: white;
 }
 
-.lmv-card__badge--watched {
+/* Watch-status badge: green when finished, red when dropped */
+.lmv-card__badge--status {
     right: 6px;
     background: rgba(52, 211, 153, 0.92);
     color: white;
 }
 
-.lmv-card__badge--fav + .lmv-card__badge--watched {
+.lmv-card__badge--status.lmv-card__badge--dropped {
+    background: var(--lmv-dropped-solid);
+}
+
+.lmv-card__badge--fav + .lmv-card__badge--status {
     right: 32px;
 }
 
@@ -636,6 +645,20 @@
 }
 .lmv-card:not(.lmv-card--watched):hover .lmv-card__img {
     filter: none;
+}
+
+/* A dropped title stays visibly set aside, even on hover.
+   Selectors are doubled up to outrank the :not(.lmv-card--watched) rules above,
+   which carry the same class count and would otherwise win. */
+.lmv-card.lmv-card--status-dropped .lmv-card__poster {
+    outline: 2px solid var(--lmv-dropped-border);
+    outline-offset: -2px;
+}
+.lmv-card.lmv-card--status-dropped .lmv-card__img {
+    filter: grayscale(75%) brightness(0.72);
+}
+.lmv-card.lmv-card--status-dropped:hover .lmv-card__img {
+    filter: grayscale(40%) brightness(0.9);
 }
 
 /* Card body */
@@ -950,6 +973,12 @@
     background: var(--lmv-lavender-dim) !important;
     color: var(--lmv-lavender) !important;
     border-color: var(--lmv-lavender-border) !important;
+}
+
+.lmv-btn--dropped.lmv-btn--active {
+    background: var(--lmv-dropped-dim) !important;
+    color: var(--lmv-dropped) !important;
+    border-color: var(--lmv-dropped-border) !important;
 }
 
 .lmv-btn--full {

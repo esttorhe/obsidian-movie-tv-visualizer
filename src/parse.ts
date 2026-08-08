@@ -1,7 +1,7 @@
 // ABOUTME: Pure frontmatter coercion helpers and the note-to-MediaItem builder for movies and TV shows.
 // ABOUTME: Uses only a type-only Obsidian import so it can be unit tested outside the Obsidian runtime.
 import type { TFile } from "obsidian";
-import type { MediaItem, Movie, TvShow, MediaType, TvStatus } from "./types";
+import type { MediaItem, Movie, TvShow, MediaType, TvStatus, WatchStatus } from "./types";
 
 // item.title falls back to the note's filename when there's no explicit `title`
 // frontmatter field, and that filename may carry a capture-timestamp prefix
@@ -78,6 +78,27 @@ export function parseTvStatus(val: unknown): TvStatus | undefined {
 	return undefined;
 }
 
+const VALID_WATCH_STATUSES: WatchStatus[] = ["unwatched", "watching", "watched", "dropped"];
+
+// Resolve your personal watch status. An explicit, recognized `watchStatus` wins;
+// otherwise it's inferred from progress signals, so notes written before the field
+// existed keep reporting the same state they always did.
+export function parseWatchStatus(val: unknown, fm: Record<string, unknown>): WatchStatus {
+	const raw = toStr(val)?.trim().toLowerCase().replace(/\s+/g, "-");
+	if (raw) {
+		if (VALID_WATCH_STATUSES.includes(raw as WatchStatus)) return raw as WatchStatus;
+		if (raw === "dnf" || raw === "did-not-finish" || raw === "abandoned" ||
+			raw === "gave-up" || raw === "quit" || raw === "stopped") return "dropped";
+		if (raw === "seen" || raw === "finished" || raw === "completed" || raw === "done") return "watched";
+		if (raw === "currently-watching" || raw === "in-progress") return "watching";
+		if (raw === "to-watch" || raw === "plan-to-watch" || raw === "want-to-watch" || raw === "backlog")
+			return "unwatched";
+	}
+	if (toStr(fm.last) || (toNumber(fm.timesWatched) ?? 0) > 0) return "watched";
+	if ((toNumber(fm.currentSeason) ?? 0) > 0 || (toNumber(fm.currentEpisode) ?? 0) > 0) return "watching";
+	return "unwatched";
+}
+
 // Decide the media type from a note's `categories` list.
 // Returns undefined for notes that are neither movies nor TV shows.
 export function detectMediaType(categories: string[]): MediaType | undefined {
@@ -127,6 +148,7 @@ export function buildMediaItem(
 		trailer: toStr(fm.trailer),
 
 		favorite: toBool(fm.favorite),
+		watchStatus: parseWatchStatus(fm.watchStatus, fm),
 		watchlist: toStr(fm.watchlist),
 		last: toStr(fm.last),
 		timesWatched: toNumber(fm.timesWatched) ?? 0,

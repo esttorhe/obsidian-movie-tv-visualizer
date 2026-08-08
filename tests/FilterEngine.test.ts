@@ -45,6 +45,19 @@ describe("FilterEngine common filters", () => {
 		expect(engine.apply(collection, base({ status: "unwatched" })).map((m) => m.id).sort()).toEqual(["Heat", "Severance"]);
 	});
 
+	it("filters watching and dropped titles", () => {
+		const withStatuses = [
+			...collection,
+			makeTv({ id: "Lost", title: "Lost", currentSeason: 3, currentEpisode: 2, last: "2024-02-01", watchStatus: "dropped" }),
+			makeTv({ id: "Andor", title: "Andor", currentSeason: 1, currentEpisode: 5 }),
+		];
+		expect(engine.apply(withStatuses, base({ status: "dropped" })).map((m) => m.id)).toEqual(["Lost"]);
+		expect(engine.apply(withStatuses, base({ status: "watching" })).map((m) => m.id)).toEqual(["Andor"]);
+		// A dropped title is neither watched nor waiting to be watched.
+		expect(engine.apply(withStatuses, base({ status: "watched" })).map((m) => m.id).sort()).toEqual(["Fleabag", "Ran"]);
+		expect(engine.apply(withStatuses, base({ status: "unwatched" })).map((m) => m.id).sort()).toEqual(["Heat", "Severance"]);
+	});
+
 	it("filters favorites", () => {
 		expect(engine.apply(collection, base({ status: "favorites" })).map((m) => m.id)).toEqual(["Severance"]);
 	});

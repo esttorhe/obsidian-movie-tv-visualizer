@@ -1,6 +1,20 @@
 // ABOUTME: Pure accessor helpers over the Movie/TvShow union so views can treat both uniformly.
 // ABOUTME: No Obsidian runtime imports — safe to unit test and reuse across engines and views.
-import type { MediaItem, Movie, TvShow } from "./types";
+import type { MediaItem, Movie, TvShow, WatchStatus } from "./types";
+
+const WATCH_STATUS_LABEL: Record<WatchStatus, string> = {
+	unwatched: "Unwatched",
+	watching: "Watching",
+	watched: "Watched",
+	dropped: "Dropped",
+};
+
+const WATCH_STATUS_ICON: Record<WatchStatus, string> = {
+	unwatched: "circle",
+	watching: "play-circle",
+	watched: "check-circle",
+	dropped: "x-circle",
+};
 
 export function isMovie(item: MediaItem): item is Movie {
 	return item.mediaType === "movie";
@@ -31,7 +45,24 @@ export function totalRuntime(item: MediaItem): number {
 }
 
 export function isWatched(item: MediaItem): boolean {
-	return !!item.last || item.timesWatched > 0;
+	return item.watchStatus === "watched";
+}
+
+// Started but stopped for good — deliberately neither watched nor waiting to be watched.
+export function isDropped(item: MediaItem): boolean {
+	return item.watchStatus === "dropped";
+}
+
+export function isWatching(item: MediaItem): boolean {
+	return item.watchStatus === "watching";
+}
+
+export function watchStatusLabel(status: WatchStatus): string {
+	return WATCH_STATUS_LABEL[status];
+}
+
+export function watchStatusIcon(status: WatchStatus): string {
+	return WATCH_STATUS_ICON[status];
 }
 
 export function mediaLabel(item: MediaItem): string {

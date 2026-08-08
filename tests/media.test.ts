@@ -8,6 +8,8 @@ import {
 	displayRuntime,
 	totalRuntime,
 	isWatched,
+	isDropped,
+	isWatching,
 	mediaLabel,
 	progressLabel,
 	tvProgressFraction,
@@ -46,6 +48,19 @@ describe("watched + labels", () => {
 		expect(isWatched(makeMovie({ last: "2024-01-01" }))).toBe(true);
 		expect(isWatched(makeMovie({ timesWatched: 2 }))).toBe(true);
 		expect(isWatched(makeMovie({}))).toBe(false);
+	});
+
+	it("never counts a dropped title as watched, however much of it was seen", () => {
+		const dropped = makeTv({ last: "2024-03-20", timesWatched: 1, currentEpisode: 4, watchStatus: "dropped" });
+		expect(isDropped(dropped)).toBe(true);
+		expect(isWatched(dropped)).toBe(false);
+		expect(isDropped(makeMovie({ last: "2024-01-01" }))).toBe(false);
+	});
+
+	it("treats recorded season/episode progress as watching", () => {
+		expect(isWatching(makeTv({ currentEpisode: 4 }))).toBe(true);
+		expect(isWatching(makeTv({ currentEpisode: 4, watchStatus: "dropped" }))).toBe(false);
+		expect(isWatching(makeMovie({}))).toBe(false);
 	});
 
 	it("labels media type", () => {

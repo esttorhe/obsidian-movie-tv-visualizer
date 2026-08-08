@@ -9,6 +9,7 @@ import {
 	toStr,
 	toBool,
 	parseTvStatus,
+	parseWatchStatus,
 	detectMediaType,
 	buildMediaItem,
 	cleanSearchTitle,
@@ -113,6 +114,50 @@ describe("parseTvStatus", () => {
 	});
 });
 
+describe("parseWatchStatus", () => {
+	it("accepts the canonical values", () => {
+		expect(parseWatchStatus("unwatched", {})).toBe("unwatched");
+		expect(parseWatchStatus("watching", {})).toBe("watching");
+		expect(parseWatchStatus("watched", {})).toBe("watched");
+		expect(parseWatchStatus("dropped", {})).toBe("dropped");
+	});
+
+	it("normalizes assorted spellings of a dropped title", () => {
+		expect(parseWatchStatus("Dropped", {})).toBe("dropped");
+		expect(parseWatchStatus("abandoned", {})).toBe("dropped");
+		expect(parseWatchStatus("dnf", {})).toBe("dropped");
+		expect(parseWatchStatus("did not finish", {})).toBe("dropped");
+		expect(parseWatchStatus("gave up", {})).toBe("dropped");
+		expect(parseWatchStatus("quit", {})).toBe("dropped");
+		expect(parseWatchStatus("stopped", {})).toBe("dropped");
+	});
+
+	it("normalizes assorted spellings of the other statuses", () => {
+		expect(parseWatchStatus("seen", {})).toBe("watched");
+		expect(parseWatchStatus("finished", {})).toBe("watched");
+		expect(parseWatchStatus("completed", {})).toBe("watched");
+		expect(parseWatchStatus("currently watching", {})).toBe("watching");
+		expect(parseWatchStatus("in progress", {})).toBe("watching");
+		expect(parseWatchStatus("to watch", {})).toBe("unwatched");
+		expect(parseWatchStatus("plan to watch", {})).toBe("unwatched");
+		expect(parseWatchStatus("backlog", {})).toBe("unwatched");
+	});
+
+	it("infers from progress signals when the field is absent or unrecognized", () => {
+		expect(parseWatchStatus(undefined, { last: "2024-03-20" })).toBe("watched");
+		expect(parseWatchStatus(undefined, { timesWatched: 2 })).toBe("watched");
+		expect(parseWatchStatus("nonsense", { last: "2024-03-20" })).toBe("watched");
+		expect(parseWatchStatus(undefined, { currentEpisode: 4 })).toBe("watching");
+		expect(parseWatchStatus(undefined, { currentSeason: 2 })).toBe("watching");
+		expect(parseWatchStatus(undefined, {})).toBe("unwatched");
+		expect(parseWatchStatus(undefined, { timesWatched: 0 })).toBe("unwatched");
+	});
+
+	it("lets an explicit dropped status win over progress signals", () => {
+		expect(parseWatchStatus("dropped", { last: "2024-03-20", currentEpisode: 4 })).toBe("dropped");
+	});
+});
+
 describe("detectMediaType", () => {
 	it("detects movies case-insensitively", () => {
 		expect(detectMediaType(["Movies"])).toBe("movie");
@@ -190,6 +235,21 @@ describe("buildMediaItem", () => {
 			expect(item!.currentSeason).toBe(2);
 			expect(item!.currentEpisode).toBe(4);
 		}
+	});
+
+	it("resolves the watch status from the note, explicitly or by inference", () => {
+		const dropped = buildMediaItem(
+			{ categories: ["TV Shows"], watchStatus: "abandoned", last: "2024-03-20", currentEpisode: 4 },
+			"Dropped Show",
+			fakeFile("Dropped Show")
+		);
+		expect(dropped!.watchStatus).toBe("dropped");
+
+		const inferred = buildMediaItem({ categories: ["Movies"], last: "2024-03-20" }, "Ran", file);
+		expect(inferred!.watchStatus).toBe("watched");
+
+		const untouched = buildMediaItem({ categories: ["Movies"] }, "Heat", file);
+		expect(untouched!.watchStatus).toBe("unwatched");
 	});
 
 	it("falls back to the note id for a missing title and tolerates missing fields", () => {

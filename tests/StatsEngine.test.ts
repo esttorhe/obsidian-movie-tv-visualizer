@@ -28,6 +28,18 @@ describe("computeStats", () => {
 		expect(stats.favorites).toBe(1);
 	});
 
+	it("counts watching and dropped titles apart from watched and unwatched", () => {
+		const withStatuses = engine.computeStats([
+			...collection,
+			makeTv({ id: "Lost", title: "Lost", currentEpisode: 2, last: "2024-02-01", watchStatus: "dropped" }),
+			makeTv({ id: "Andor", title: "Andor", currentEpisode: 5 }),
+		]);
+		expect(withStatuses.dropped).toBe(1);
+		expect(withStatuses.watching).toBe(1);
+		expect(withStatuses.watched).toBe(2);
+		expect(withStatuses.unwatched).toBe(2);
+	});
+
 	it("averages rating and imdb over rated items only", () => {
 		expect(stats.avgRating).toBeCloseTo((10 + 9 + 8) / 3, 5);
 		expect(stats.avgImdb).toBeCloseTo((8.2 + 8.3) / 2, 5);
@@ -72,6 +84,11 @@ describe("cards + carousels", () => {
 		const finished = makeTv({ id: "F", title: "F", episodes: 10, currentEpisode: 10 });
 		const result = engine.continueWatching([...collection, inProgress, finished], 10);
 		expect(result.map((m) => m.id)).toEqual(["P"]);
+	});
+
+	it("leaves dropped shows out of continue-watching", () => {
+		const dropped = makeTv({ id: "D", title: "D", episodes: 10, currentEpisode: 3, last: "2024-05-01", watchStatus: "dropped" });
+		expect(engine.continueWatching([...collection, dropped], 10).map((m) => m.id)).toEqual([]);
 	});
 });
 

@@ -111,7 +111,9 @@ export function createFilterSidebar(opts: FilterSidebarOptions): HTMLElement {
 	const statuses: { value: FilterState["status"]; label: string }[] = [
 		{ value: "all", label: "All" },
 		{ value: "unwatched", label: "Unwatched" },
+		{ value: "watching", label: "Watching" },
 		{ value: "watched", label: "Watched" },
+		{ value: "dropped", label: "Dropped" },
 		{ value: "favorites", label: "Favorites" },
 	];
 	const statusGroup = document.createElement("div");

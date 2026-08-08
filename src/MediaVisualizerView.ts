@@ -2,6 +2,7 @@
 // ABOUTME: Owns the data service, persisted rank/all/tier orders, and shared item mutation handlers.
 import { ItemView, WorkspaceLeaf, setIcon } from "obsidian";
 import type { MediaItem } from "./types";
+import { isWatched } from "./media";
 import { MediaDataService } from "./services/MediaDataService";
 import { renderDashboard } from "./views/DashboardView";
 import { CatalogView } from "./views/CatalogView";
@@ -23,6 +24,7 @@ type Route =
 	| "favorites"
 	| "unwatched"
 	| "watched"
+	| "dropped"
 	| "search"
 	| "top"
 	| "creators"
@@ -46,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
 	{ id: "favorites", label: "Favorites", icon: "heart" },
 	{ id: "unwatched", label: "Unwatched", icon: "eye-off" },
 	{ id: "watched", label: "Watched", icon: "check-circle" },
+	{ id: "dropped", label: "Dropped", icon: "x-circle" },
 	{ id: "top", label: "Top Lists", icon: "trophy" },
 	{ id: "creators", label: "Directors & Creators", icon: "clapperboard" },
 	{ id: "actors", label: "Actors", icon: "users" },
@@ -193,17 +196,19 @@ export class MediaVisualizerView extends ItemView {
 				await this.service.updateField(item, { favorite: newVal });
 			},
 			onMarkWatched: async (item: MediaItem) => {
-				const alreadyWatched = !!(item.last || item.timesWatched > 0);
-				if (alreadyWatched) {
+				if (isWatched(item)) {
 					item.last = "";
 					item.timesWatched = 0;
-					await this.service.updateField(item, { last: "", timesWatched: 0 });
+					item.watchStatus = "unwatched";
+					await this.service.updateField(item, { last: "", timesWatched: 0, watchStatus: "unwatched" });
 				} else {
+					// Also the way out of "dropped": deciding you did finish it after all.
 					const today = new Date().toISOString().split("T")[0];
 					const newCount = item.timesWatched + 1;
 					item.last = today;
 					item.timesWatched = newCount;
-					await this.service.updateField(item, { last: today, timesWatched: newCount });
+					item.watchStatus = "watched";
+					await this.service.updateField(item, { last: today, timesWatched: newCount, watchStatus: "watched" });
 				}
 			},
 		};
@@ -242,6 +247,14 @@ export class MediaVisualizerView extends ItemView {
 					service: this.service,
 					...handlers,
 					initialFilter: { mediaType: "all", genres: [], status: "watched" },
+				}).render(this.viewContentEl);
+				break;
+
+			case "dropped":
+				new CatalogView({
+					service: this.service,
+					...handlers,
+					initialFilter: { mediaType: "all", genres: [], status: "dropped" },
 				}).render(this.viewContentEl);
 				break;
 

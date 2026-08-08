@@ -25,13 +25,13 @@ Everything works across **both** movies and TV shows, in one catalog and one das
 
 ### Dashboard
 - **Hero banner** — features your last-watched or highest-rated title (movie or show) with backdrop
-- **Stats bar** — total, movies, TV shows, watched, favorites, avg personal rating, avg IMDb, unique creators
+- **Stats bar** — total, movies, TV shows, watched, dropped, favorites, avg personal rating, avg IMDb, unique creators
 - **Carousels** — Continue Watching (in-progress TV), Recently Watched, Recently Added, Favorites, Top IMDb, My Highest Rated
 
 ### Catalog
 - Grid of every movie and show
 - **Media-type filter: All / Movies / TV Shows**
-- Filter by genre, status (watched / unwatched / favorites), year range, rating, IMDb, runtime bucket, network, director/creator, cast, and free-text search
+- Filter by genre, status (unwatched / watching / watched / dropped / favorites), year range, rating, IMDb, runtime bucket, network, director/creator, cast, and free-text search
 - Sort by title, year, IMDb, RT, rating, runtime, last watched, added, director/creator
 - Four display modes: Large Grid, Compact Grid, List, Poster
 
@@ -51,6 +51,7 @@ Everything works across **both** movies and TV shows, in one catalog and one das
 
 ### Detail view
 - **Movies** get the classic layout: poster, backdrop, scores, cast, plot, awards, trailer embed, review, mood
+- **Watch status** — mark a title watched, or **dropped** when you stopped watching and aren't going back; dropped titles are greyed out with a red badge, kept out of "watched" and "unwatched" alike, and dropped shows disappear from Continue Watching
 - **TV shows** get a dedicated **season/episode progress panel** — shows "you're on S2E4", a progress bar, and lets you set the current season/episode or bump to the next episode, all written back to frontmatter
 
 ### Tier List
@@ -62,6 +63,7 @@ Everything works across **both** movies and TV shows, in one catalog and one das
 
 ### Stats
 - Titles by genre, rating distribution, titles by year, top directors & creators
+- Watch-status counters: watched, watching, unwatched, dropped
 - **TV-specific breakdowns:** shows by network and TV status distribution (returning / ended / canceled)
 - Filterable to All / Movies / TV Shows
 
@@ -140,6 +142,7 @@ coverBackdrop: https://...
 trailer: https://...
 
 favorite: true
+watchStatus: watched   # unwatched | watching | watched | dropped (optional — inferred when absent)
 watchlist: 2024-01-15  # ISO date — when you added it
 last: 2024-03-20       # ISO date — last time you watched it
 timesWatched: 2
@@ -197,6 +200,7 @@ coverBackdrop: https://...
 trailer: https://...
 
 favorite: false
+watchStatus: watching  # mid-run; use `dropped` for a show you stopped and won't return to
 watchlist: 2024-01-10
 last: 2025-03-21
 timesWatched: 1
@@ -230,6 +234,27 @@ categories:
 | `currentSeason` / `currentEpisode` | number | Your progress. The detail view reads and writes these when you set progress or hit "Next episode". |
 
 Aggregate "total time" counts a movie's `runtime`, and a show's `episodeRuntime × episodes`.
+
+### Watch status
+
+`watchStatus` records **your** relationship with a title, for movies and TV shows alike. It is deliberately separate from a show's production `status` (`returning | ended | canceled`), which describes the show itself.
+
+| Value | Meaning |
+|---|---|
+| `unwatched` | Haven't started it. |
+| `watching` | Started, still going. |
+| `watched` | Finished it. |
+| `dropped` | Stopped watching without finishing, and not going back. |
+
+**The field is optional.** When it's absent — as it is in every note written before this field existed — the status is inferred:
+
+1. a `last` date or `timesWatched > 0` → `watched`
+2. a `currentSeason` or `currentEpisode` → `watching`
+3. otherwise → `unwatched`
+
+Common spellings are normalized, so `abandoned`, `dnf`, `did not finish`, `gave up`, `quit` and `stopped` all mean `dropped`; `seen`/`finished`/`completed` mean `watched`; `currently watching`/`in progress` mean `watching`; and `to watch`/`plan to watch`/`backlog` mean `unwatched`.
+
+A **dropped** title counts as neither watched nor unwatched: it's excluded from both of those filters and counters, it drops out of the Continue Watching carousel, and it gets its own sidebar filter, nav entry, red poster badge and Stats counter. Its `last` date and season/episode progress are left untouched — that's the record of how far you got. Hitting "Mark as watched" on a dropped title un-drops it; toggling "Dropped" off hands the note back to the inference rules above.
 
 ---
 

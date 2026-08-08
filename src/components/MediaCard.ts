@@ -4,7 +4,7 @@ import { setIcon } from "obsidian";
 import type { MediaItem } from "../types";
 import { createStarRating } from "./StarRating";
 import { StatsEngine } from "../services/StatsEngine";
-import { credits, displayRuntime, isWatched, isTv, isMovie, progressLabel } from "../media";
+import { credits, displayRuntime, isWatched, isDropped, isTv, isMovie, progressLabel, watchStatusLabel, watchStatusIcon } from "../media";
 
 const stats = new StatsEngine();
 
@@ -22,7 +22,7 @@ export function createMediaCard(opts: MediaCardOptions): HTMLElement {
 	const { item, size = "normal", onClick, onFavToggle, onMarkWatched } = opts;
 
 	const card = document.createElement("div");
-	card.className = `lmv-card lmv-card--${size}${isWatched(item) ? " lmv-card--watched" : ""}`;
+	card.className = `lmv-card lmv-card--${size} lmv-card--status-${item.watchStatus}${isWatched(item) ? " lmv-card--watched" : ""}`;
 	card.dataset.id = item.id;
 
 	if (size === "list") {
@@ -39,6 +39,17 @@ function typeBadge(item: MediaItem): HTMLElement {
 	badge.className = `lmv-card__badge lmv-card__badge--type lmv-card__badge--${item.mediaType}`;
 	setIcon(badge, isMovie(item) ? "clapperboard" : "tv");
 	badge.title = isMovie(item) ? "Movie" : "TV Show";
+	return badge;
+}
+
+// Corner badge for the two watch statuses worth calling out on a poster:
+// finished, and deliberately abandoned. Watching/unwatched read from the poster itself.
+function statusBadge(item: MediaItem): HTMLElement | null {
+	if (!isWatched(item) && !isDropped(item)) return null;
+	const badge = document.createElement("span");
+	badge.className = `lmv-card__badge lmv-card__badge--status lmv-card__badge--${item.watchStatus}`;
+	badge.title = watchStatusLabel(item.watchStatus);
+	setIcon(badge, watchStatusIcon(item.watchStatus));
 	return badge;
 }
 
@@ -77,12 +88,8 @@ function renderGridCard(
 		poster.appendChild(fav);
 	}
 
-	if (watched) {
-		const watchedBadge = document.createElement("span");
-		watchedBadge.className = "lmv-card__badge lmv-card__badge--watched";
-		setIcon(watchedBadge, "check-circle");
-		poster.appendChild(watchedBadge);
-	}
+	const status = statusBadge(item);
+	if (status) poster.appendChild(status);
 
 	// TV progress pill
 	if (isTv(item)) {
@@ -226,6 +233,8 @@ function renderListCard(
 		posterWrap.classList.add("lmv-card__poster--fallback");
 	}
 	posterWrap.appendChild(typeBadge(item));
+	const status = statusBadge(item);
+	if (status) posterWrap.appendChild(status);
 
 	const info = document.createElement("div");
 	info.className = "lmv-card__info";

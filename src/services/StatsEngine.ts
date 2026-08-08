@@ -1,7 +1,7 @@
 // ABOUTME: Pure aggregation engine: vault stats, creator/actor cards and the dashboard carousels.
 // ABOUTME: Operates on a mixed movie/TV collection via the shared media accessors; no Obsidian imports.
 import type { MediaItem, VaultStats, CreatorCard, ActorCard, TvStatus } from "../types";
-import { credits, totalRuntime, isWatched, isMovie, isTv } from "../media";
+import { credits, totalRuntime, isWatched, isWatching, isDropped, isMovie, isTv } from "../media";
 
 export class StatsEngine {
 	topByRating(items: MediaItem[], n: number): MediaItem[] {
@@ -39,11 +39,12 @@ export class StatsEngine {
 		return n ? favs.slice(0, n) : favs;
 	}
 
-	// In-progress TV shows: have recorded progress but aren't finished.
+	// In-progress TV shows: have recorded progress but aren't finished or dropped.
 	continueWatching(items: MediaItem[], n: number): MediaItem[] {
 		return items
 			.filter((m) => {
 				if (!isTv(m)) return false;
+				if (isDropped(m)) return false;
 				if (m.currentEpisode == null && m.currentSeason == null) return false;
 				if (m.episodes != null && m.currentEpisode != null && m.currentEpisode >= m.episodes) return false;
 				return true;
@@ -62,6 +63,8 @@ export class StatsEngine {
 
 	computeStats(items: MediaItem[]): VaultStats {
 		const watched = items.filter((m) => isWatched(m));
+		const watching = items.filter((m) => isWatching(m));
+		const dropped = items.filter((m) => isDropped(m));
 		const favorites = items.filter((m) => m.favorite);
 		const rated = items.filter((m) => m.rating != null);
 		const imdbRated = items.filter((m) => m.scoreImdb != null);
@@ -106,7 +109,9 @@ export class StatsEngine {
 			movieCount: items.filter(isMovie).length,
 			tvCount: items.filter(isTv).length,
 			watched: watched.length,
-			unwatched: items.length - watched.length,
+			watching: watching.length,
+			unwatched: items.length - watched.length - watching.length - dropped.length,
+			dropped: dropped.length,
 			favorites: favorites.length,
 			avgRating: rated.length ? rated.reduce((a, m) => a + m.rating!, 0) / rated.length : 0,
 			avgImdb: imdbRated.length ? imdbRated.reduce((a, m) => a + m.scoreImdb!, 0) / imdbRated.length : 0,

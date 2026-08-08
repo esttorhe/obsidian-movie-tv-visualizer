@@ -6,7 +6,7 @@ import { buildMediaItem } from "../parse";
 import { credits, isTv } from "../media";
 import { StatsEngine } from "./StatsEngine";
 
-type MovieMutable = Partial<Pick<MediaItem, "rating" | "favorite" | "last" | "timesWatched" | "review" | "mood">>;
+type MovieMutable = Partial<Pick<MediaItem, "rating" | "favorite" | "watchStatus" | "last" | "timesWatched" | "review" | "mood">>;
 type TvMutable = Partial<Pick<TvShow, "currentSeason" | "currentEpisode">>;
 type MediaMutation = MovieMutable & TvMutable;
 
@@ -129,6 +129,7 @@ export class MediaDataService {
 		await this.app.fileManager.processFrontMatter(item.file, (fm) => {
 			if (updates.rating !== undefined) fm.rating = updates.rating;
 			if (updates.favorite !== undefined) fm.favorite = updates.favorite;
+			if (updates.watchStatus !== undefined) fm.watchStatus = updates.watchStatus;
 			if (updates.last !== undefined) fm.last = updates.last;
 			if (updates.timesWatched !== undefined) fm.timesWatched = updates.timesWatched;
 			if (updates.review !== undefined) fm.review = updates.review;

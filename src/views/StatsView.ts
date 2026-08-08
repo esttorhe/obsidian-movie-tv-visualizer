@@ -127,7 +127,9 @@ function buildSummary(stats: VaultStats, mediaFilter: MediaFilter): HTMLElement 
 	}
 	summaryItems.push(
 		{ icon: "check-circle", value: stats.watched, label: "Watched" },
+		{ icon: "play-circle", value: stats.watching, label: "Watching" },
 		{ icon: "eye", value: stats.unwatched, label: "Unwatched" },
+		{ icon: "x-circle", value: stats.dropped, label: "Dropped" },
 		{ icon: "heart", value: stats.favorites, label: "Favorites" },
 		{ icon: "star", value: stats.avgRating > 0 ? stats.avgRating.toFixed(2) : "—", label: "Avg rating" },
 		{ icon: "trending-up", value: stats.avgImdb > 0 ? stats.avgImdb.toFixed(2) : "—", label: "Avg IMDb" },

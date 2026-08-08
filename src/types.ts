@@ -6,6 +6,10 @@ export type MediaType = "movie" | "tv";
 
 export type TvStatus = "returning" | "ended" | "canceled";
 
+// Your personal relationship with a title, distinct from a show's production `status`.
+// "dropped" marks something you stopped watching and do not intend to finish.
+export type WatchStatus = "unwatched" | "watching" | "watched" | "dropped";
+
 export interface MediaBase {
 	// Identity
 	mediaType: MediaType;
@@ -37,6 +41,7 @@ export interface MediaBase {
 
 	// User state
 	favorite: boolean;
+	watchStatus: WatchStatus;
 	watchlist?: string; // ISO date
 	last?: string; // ISO date last watched
 	timesWatched: number;
@@ -90,7 +95,7 @@ export type SortDirection = "asc" | "desc";
 
 export type ViewMode = "grid-large" | "grid-compact" | "list" | "poster";
 
-export type StatusFilter = "all" | "unwatched" | "watched" | "favorites";
+export type StatusFilter = "all" | "unwatched" | "watching" | "watched" | "dropped" | "favorites";
 
 export interface FilterState {
 	mediaType: MediaFilter;
@@ -131,7 +136,9 @@ export interface VaultStats {
 	movieCount: number;
 	tvCount: number;
 	watched: number;
+	watching: number;
 	unwatched: number;
+	dropped: number;
 	favorites: number;
 	avgRating: number;
 	avgImdb: number;
