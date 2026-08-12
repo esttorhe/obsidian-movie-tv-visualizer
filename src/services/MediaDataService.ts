@@ -2,7 +2,7 @@
 // ABOUTME: Watches metadata/vault changes and writes user edits back via fileManager.processFrontMatter.
 import { App, TFile } from "obsidian";
 import type { MediaItem, TvShow, VaultStats, CreatorCard, ActorCard } from "../types";
-import { buildMediaItem } from "../parse";
+import { buildMediaItem, applyWatchStatusToFrontmatter } from "../parse";
 import { credits, isTv } from "../media";
 import { StatsEngine } from "./StatsEngine";
 
@@ -129,7 +129,7 @@ export class MediaDataService {
 		await this.app.fileManager.processFrontMatter(item.file, (fm) => {
 			if (updates.rating !== undefined) fm.rating = updates.rating;
 			if (updates.favorite !== undefined) fm.favorite = updates.favorite;
-			if (updates.watchStatus !== undefined) fm.watchStatus = updates.watchStatus;
+			if (updates.watchStatus !== undefined) applyWatchStatusToFrontmatter(fm, updates.watchStatus);
 			if (updates.last !== undefined) fm.last = updates.last;
 			if (updates.timesWatched !== undefined) fm.timesWatched = updates.timesWatched;
 			if (updates.review !== undefined) fm.review = updates.review;

@@ -156,6 +156,23 @@ describe("parseWatchStatus", () => {
 	it("lets an explicit dropped status win over progress signals", () => {
 		expect(parseWatchStatus("dropped", { last: "2024-03-20", currentEpisode: 4 })).toBe("dropped");
 	});
+
+	// The legacy `watched` boolean predates `watchStatus` and is still on every
+	// note in the vault. A note carrying only that flag has been watched.
+	it("infers watched from the legacy watched boolean", () => {
+		expect(parseWatchStatus(undefined, { watched: true })).toBe("watched");
+		expect(parseWatchStatus(undefined, { watched: "true" })).toBe("watched");
+	});
+
+	it("does not treat watched: false as a progress signal", () => {
+		expect(parseWatchStatus(undefined, { watched: false })).toBe("unwatched");
+		expect(parseWatchStatus(undefined, { watched: false, currentEpisode: 4 })).toBe("watching");
+	});
+
+	it("lets an explicit status override the legacy watched boolean", () => {
+		expect(parseWatchStatus("dropped", { watched: true })).toBe("dropped");
+		expect(parseWatchStatus("watching", { watched: true })).toBe("watching");
+	});
 });
 
 describe("detectMediaType", () => {

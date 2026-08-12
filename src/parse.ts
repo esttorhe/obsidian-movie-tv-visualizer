@@ -95,8 +95,22 @@ export function parseWatchStatus(val: unknown, fm: Record<string, unknown>): Wat
 			return "unwatched";
 	}
 	if (toStr(fm.last) || (toNumber(fm.timesWatched) ?? 0) > 0) return "watched";
+	// `watched` predates `watchStatus`; a note carrying only the old flag is still watched.
+	if (toBool(fm.watched)) return "watched";
 	if ((toNumber(fm.currentSeason) ?? 0) > 0 || (toNumber(fm.currentEpisode) ?? 0) > 0) return "watching";
 	return "unwatched";
+}
+
+// Write a watch status to a frontmatter object, keeping the legacy `watched`
+// boolean in step. The two fields are read by different consumers — the vault's
+// own notes and Bases views still key off `watched`, while this plugin uses
+// `watchStatus` — so updating one alone leaves a note that contradicts itself.
+export function applyWatchStatusToFrontmatter(
+	fm: Record<string, unknown>,
+	watchStatus: WatchStatus,
+): void {
+	fm.watchStatus = watchStatus;
+	fm.watched = watchStatus === "watched";
 }
 
 // Decide the media type from a note's `categories` list.
